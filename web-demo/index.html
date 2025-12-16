@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skyward Skip - Play Now!</title>
+    
+    <!-- Rootintootin Game SDK -->
+    <script src="rootintootin-sdk.js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -83,6 +87,10 @@
     </div>
 
     <script>
+        // Initialize Rootintootin SDK
+        // SDK will automatically listen for GAME_INIT messages
+        console.log('Rootintootin SDK loaded:', typeof window.Rootintootin);
+        
         // Game variables
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -253,10 +261,30 @@
             player.velX = 0;
             player.velY = 0;
             camera.y = 0;
+            
+            // Send game over score to Rootintootin SDK
+            sendGameOverScore(score);
+            
             score = 0;
             scoreElement.textContent = score;
             platforms.length = 0;
             createPlatforms();
+        }
+        
+        // Send game over score to SDK
+        async function sendGameOverScore(finalScore) {
+            try {
+                // Check if SDK is initialized
+                if (window.Rootintootin && window.Rootintootin.session.getToken()) {
+                    console.log('[Game] Sending game over score:', finalScore);
+                    await window.Rootintootin.game.end(finalScore);
+                    console.log('[Game] Score sent successfully');
+                } else {
+                    console.log('[Game] SDK not initialized, skipping score submission');
+                }
+            } catch (error) {
+                console.error('[Game] Failed to send score:', error);
+            }
         }
         
         function draw() {
